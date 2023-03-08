@@ -1,0 +1,236 @@
+#include <SFML/Graphics.hpp>
+#include <time.h>
+#include <iostream>
+#include <string>
+
+using namespace std;
+using namespace sf;
+
+
+
+const int grheight = 40;
+const int grwidth = 55;
+
+int grid[grheight][grwidth] = { 0 };//поле-сетка
+int tiles = 18;
+
+struct enemy
+{
+	int x, y, dx, dy; // dx,dy - коорд персонажей
+
+	enemy() {
+		x = 300;
+		y = 300;
+
+		dx = 4 - rand() % 8;// создание координат для врага
+		dy = 4 - rand() % 8;// создание координат для врага
+	}
+
+	void move() {
+		x += dx;
+		if (grid[y / tiles][x / tiles] == 1) {// движение персонажей по иксу
+			dx = -dx;
+			x += dx;
+		}
+		y += dy;
+		if (grid[y / tiles][x / tiles] == 1) {//движение персонажей по игрику
+			dy = -dy;
+			y += dy;
+		}
+	}
+};
+
+void toDrop(int y, int x) { // расстановка плиток поля
+	// замена нулей на -1 и их замена на texture
+	if (grid[y][x] == 0)
+		grid[y][x] = -1;
+
+	if (grid[y - 1][x] == 0)
+		toDrop(y - 1, x);
+
+	if (grid[y + 1][x] == 0)
+		toDrop(y + 1, x);
+
+	if (grid[y][x - 1] == 0)
+		toDrop(y, x - 1);
+
+	if (grid[y][x + 1] == 0)
+		toDrop(y, x + 1);
+
+
+}
+int menu();
+//int about();
+int main() {
+
+	
+	srand(time(0));
+	//RenderWindow Window(sf::VideoMode(1376, 768), "Lets Xonix");
+	//menu(Window);
+	menu();
+	//about();
+	//Window.close();b
+
+	RenderWindow window(VideoMode(grwidth * tiles, grheight * tiles), "Xonix!");// создание доп окна
+	window.setFramerateLimit(60);//ограничение размера доп окна
+
+
+	Texture t;
+	t.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/tiles13.png");
+	Sprite tile(t);
+
+
+	Texture background;
+	background.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/fon5.png");
+	Sprite bk(background);
+	bk.setPosition(grwidth * tiles, grheight * tiles);
+
+	int x = 0, y = 0, dx = 0, dy = 0;
+	float timer = 0, delay = 0.07;
+	Clock clock; // переменная времени,то есть привязка ко времени
+
+	for (int i = 0; i < grheight; i++) // цикл для ограничения выхода за границу
+		for (int j = 0; j < grwidth; j++)//цикл для ограничения выхода за границу
+			if (i == 0 || j == 0 || i == grheight - 1 || j == grwidth - 1)
+				grid[i][j] = 1;
+
+	Texture gmover;
+	gmover.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/hgh.png");
+
+	Sprite GameOver(gmover);
+	GameOver.setPosition(290, 120);
+	bool Game = true;
+
+	Texture vrag_enem;
+	vrag_enem.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/gfg.png");
+	Sprite enemyy(vrag_enem);
+	enemyy.setOrigin(20, 20);//начало координат объекта, определяется центральную точку для всех преобразований (положение, масштаб, поворот)
+
+	int enemycnt = 4;
+	enemy enem[10];
+
+	while (window.isOpen())
+	{
+		float time = clock.getElapsedTime().asSeconds();//что бы дать прошедшее время в секундах
+		clock.restart();//перезагрузка времени
+		timer += time;
+
+	
+		Event event;// класс ивент (событие) определяет системное событие и его пареметры 
+		while (window.pollEvent(event))
+			/* pollEventПытается достать "верхнее" событие из очереди событий, возвращает true, если успешно
+			(при этом само событие извлекается из очереди и
+				значение попадает по ссылке в параметре) или false, если событий в очереди нет.
+			Обычно служит для обработки событий.*/
+		{
+			if (event.type == Event::Closed)
+				window.close();
+		}
+
+		if (Game) {
+			if (Keyboard::isKeyPressed(Keyboard::D)) {
+				dx = 1;
+				dy = 0;
+			}
+			if (Keyboard::isKeyPressed(Keyboard::A)) {
+				dx = -1;
+				dy = 0;
+			}
+			if (Keyboard::isKeyPressed(Keyboard::W)) {
+				dx = 0;
+				dy = -1;
+			}
+			if (Keyboard::isKeyPressed(Keyboard::S)) {
+				dx = 0;
+				dy = 1;
+			}
+
+			if (timer > delay) {
+				x += dx;
+				y += dy;
+
+				// логика игры
+				if (x < 0)
+					x = 0;//будующая закраска плиток
+				if (x > grwidth - 1)
+					x = grwidth - 1;// пустое место
+				if (y < 0)
+					y = 0;
+				if (y > grheight - 1)
+					y = grheight - 1;
+
+				if (grid[y][x] == 2)//если равно 2 то проигрывает тк касается своей линии
+					Game = false;
+				if (grid[y][x] == 0)//заполнение следа
+					grid[y][x] = 2;
+
+				timer = 0;
+			}
+
+			for (int i = 0; i < enemycnt; i++)
+				enem[i].move();
+
+			if (grid[y][x] == 1) {// если координаты равны 1 проходим по массиву и меняем их на tiles
+				dx = dy = 0;
+
+				for (int i = 0; i < enemycnt; i++)
+					toDrop(enem[i].y / tiles, enem[i].x / tiles);
+
+				for (int i = 0; i < grheight; i++)
+					for (int j = 0; j < grwidth; j++)
+						if (grid[i][j] == -1)// если равен -1 
+							grid[i][j] = 0;// то меням на нуль(нуль  по итогу меняем на текстуры)
+						else grid[i][j] = 1;// если ни то ни то делаем пустую часть
+			}
+
+			for (int i = 0; i < enemycnt; i++)
+				if (grid[enem[i].y / tiles][enem[i].x / tiles] == 2) //если массив грид равен координатам деленое на тайлс то
+
+					Game = false;//приостановка (окончание игры) 
+		}
+
+		window.clear();
+
+		for (int i = 0; i < grheight; i++)
+			for (int j = 0; j < grwidth; j++) {
+				if (grid[i][j] == 0)// если массив грид равняется нулю(тоесть плитки закрасились) то 
+					continue;//продолжает игру
+				if (grid[i][j] == 1)// если массив грид равен 1 (тоесть не закрашено) то 
+					tile.setTextureRect(IntRect(0, 0, tiles, tiles));// закрашивается черным(пустое пространство)
+				if (grid[i][j] == 2)// если массив грид равен 2(то есть след персонажа) то 
+					tile.setTextureRect(IntRect(36, 0, tiles, tiles)); // закрашиваем красным
+
+				tile.setPosition(j * tiles, i * tiles);//позицианируем
+				window.draw(tile);// рисуем
+			}
+
+		tile.setTextureRect(IntRect(18, 0, tiles, tiles));// определяет часть текстуры, которая видна как спрайт.
+		tile.setPosition(x * tiles, y * tiles);//указание позиции поля
+		window.draw(tile);
+
+		enemyy.rotate(10);//функция для возвращения
+		for (int i = 0; i < enemycnt; i++) {
+			enemyy.setPosition(enem[i].x, enem[i].y);//зарисовка врагов
+			window.draw(enemyy); 
+		}
+		if (Game) {
+			
+			window.draw(bk); 
+		}
+
+		if (!Game)
+		window.draw(GameOver);
+
+			/*Texture press;
+			gmover.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/2.png");
+			Sprite presS(press);
+			presS.setPosition(240, 30);*/
+
+
+		
+
+		window.display();
+	}
+
+	return 0;
+}
