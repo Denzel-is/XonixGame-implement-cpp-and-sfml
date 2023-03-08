@@ -1,0 +1,18 @@
+//#include <SFML/Graphics.hpp>
+//using namespace sf;
+//
+//
+//
+//RenderWindow window(VideoMode(1780, 1080), "Lets Xonix");
+//int about() {
+//	Texture abt;
+//	abt.loadFromFile("C:here can be ur image");
+//	Sprite AboutAu(abt);
+//
+//	
+//	window.draw(AboutAu);
+//	window.display();
+//	return 2;
+//};
+//
+//
