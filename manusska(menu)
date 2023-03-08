@@ -1,0 +1,78 @@
+#include <SFML/Graphics.hpp>
+using namespace sf;
+
+//void menu(RenderWindow & window) {
+int menu() {
+	RenderWindow window(VideoMode(1920, 1080), "Lets Xonix");
+
+	Texture menu1, menu2, menu3, menu4, bkgr;
+	menu1.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/menu1.png");
+	menu2.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/menu2.png");
+	menu3.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/menu3.png");
+	menu4.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/menu4.png");
+	bkgr.loadFromFile("D:/папка для скачивания всего/шаг/Новая папка/PX/bkgr.png");
+
+	Sprite Menu1(menu1), Menu2(menu2), Menu3(menu3), Menu4(menu4), Bkgrnd(bkgr);
+	bool isMenu = 1;
+	int menuNum = 0;
+	Menu1.setPosition(100, 90);
+	Menu2.setPosition(100, 270);
+	Menu3.setPosition(100, 450);
+	Menu4.setPosition(100, 630);
+	Bkgrnd.setPosition(30, 0);
+
+	//само меню
+	while (isMenu) {
+
+		Menu1.setColor(Color::White);
+		Menu2.setColor(Color::White);
+		Menu3.setColor(Color::White);
+		Menu4.setColor(Color::White);
+		menuNum = 0;
+		window.clear(Color(129, 181, 221));
+
+		if (IntRect(100, 90, 400, 230).contains(Mouse::getPosition(window))) {
+			Menu1.setColor(Color::Green); menuNum = 1;
+		};
+		if (IntRect(100, 270, 400, 230).contains(Mouse::getPosition(window))) {
+			Menu2.setColor(Color::Green); menuNum = 2;
+		};
+		if (IntRect(100, 450, 400, 230).contains(Mouse::getPosition(window))) {
+			Menu3.setColor(Color::Red); menuNum = 3;
+		};
+		if (IntRect(100, 630, 400, 230).contains(Mouse::getPosition(window))) {
+			Menu4.setColor(Color::Green); menuNum = 4;
+		};
+
+		Event event;// класс ивент (событие) определяет системное событие и его пареметры 
+		while (window.pollEvent(event))
+			/* pollEventПытается достать "верхнее" событие из очереди событий, возвращает true, если успешно
+			(при этом само событие извлекается из очереди и
+				значение попадает по ссылке в параметре) или false, если событий в очереди нет.
+			Обычно служит для обработки событий.*/
+		{
+			if (event.type == Event::Closed)
+				window.close();
+		}
+		if (Mouse::isButtonPressed(Mouse::Left))
+		{
+
+			if (menuNum == 1) { isMenu = false; }return 1;//если нажали первую кнопку, то выходим из меню 
+			if (menuNum == 2) { window.draw(Menu2); window.display(); while (!Keyboard::isKeyPressed(Keyboard::Escape)); return 2; }
+			if (menuNum == 4) { window.draw(Menu4); window.display(); while (!Keyboard::isKeyPressed(Keyboard::Escape)); return 4; }
+			if (menuNum == 3) { window.close(); isMenu = false; return 3; }
+
+		}
+
+		window.draw(Bkgrnd);
+		window.draw(Menu1);
+		window.draw(Menu2);
+		window.draw(Menu3);
+		window.draw(Menu4);
+
+		window.display();//отоюражает  на экране то,что было в окне до сих пор
+	}
+
+}
+
+
